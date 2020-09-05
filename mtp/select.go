@@ -161,11 +161,22 @@ func SelectDeviceDirect(vid, pid uint16) (*DeviceDirect, error) {
 	}
 
 	dev := devs[0]
-	vendor, product := dev.devDescr.IdVendor, dev.devDescr.IdProduct
-
 	if len(devs) > 1 {
-		log.MTP.Warningf("detected more than 1 device, opening the first device: %04x:%04x", vendor, product)
+		for i := 0; i < len(devs); i++ {
+			if devs[i].devDescr.IdVendor == 0x04b0 {
+				// prefer Nikon cam by default
+				log.MTP.Debug("found a Nikon cam")
+				dev = devs[i]
+			}
+		}
+		log.MTP.Warningf(
+			"detected more than 1 device, opening the one of them: %04x:%04x",
+			dev.devDescr.IdVendor,
+			dev.devDescr.IdProduct,
+		)
 	}
+
+	vendor, product := dev.devDescr.IdVendor, dev.devDescr.IdProduct
 
 	if err := dev.Open(); err != nil {
 		return nil, fmt.Errorf("could not open %04x:%04x: %s", dev.devDescr.IdVendor, dev.devDescr.IdProduct, err)
