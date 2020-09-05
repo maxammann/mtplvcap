@@ -468,10 +468,17 @@ func (s *LVServer) startLiveView() error {
 	s.mtpLock.Lock()
 	defer s.mtpLock.Unlock()
 
-	err := s.dev.RunTransactionWithNoParams(OC_NIKON_DeviceReady)
-	if err != nil {
-		return fmt.Errorf("failed to start live view: the camera is not ready")
-	}
+	err := tryWithTimeout(500, 10, func(i int) (err error) {
+		err = s.dev.RunTransactionWithNoParams(OC_NIKON_DeviceReady)
+		if err != nil {
+			if i == 0 {
+				log.LV.Infof("waiting the camera to be ready... (timeout=5s)")
+			}
+			log.LV.Errorf("failed to start live view: the camera didn't become ready within 5s")
+			//return fmt.Errorf("failed to start live view: the camera didn't become ready within 5s")
+		}
+		return
+	})
 
 	desc := DevicePropDesc{}
 	err = s.dev.GetDevicePropDesc(DPC_NIKON_RecordingMedia, &desc)
@@ -884,4 +891,16 @@ func (s *LVServer) setFN(fn string) error {
 		return fmt.Errorf("failed to set f-number: start live view: %s", err)
 	}
 	return nil
+}
+
+func tryWithTimeout(intervalMs, n int, fn func(i int) error) error {
+	var lastErr error
+	for i := 0; i < n; i++ {
+		lastErr = fn(i)
+		if lastErr == nil {
+			break
+		}
+		time.Sleep(time.Duration(intervalMs) * time.Millisecond)
+	}
+	return lastErr
 }
