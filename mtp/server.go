@@ -481,8 +481,8 @@ func (s *LVServer) startLiveView() error {
 
 	if currentMedia, ok := desc.CurrentValue.(int8); ok {
 		if currentMedia == int8(RecordingMediaCard) {
-			log.LV.Debug("current recording media: card")
-			log.LV.Debug("the recording media is the card. Switching it to the SDRAM.")
+			log.LV.Debug("current storage: external card")
+			log.LV.Debug("switching the storage to the SDRAM")
 			payload := struct {
 				Media RecordingMedia
 			}{
