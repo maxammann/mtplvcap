@@ -34,9 +34,17 @@ const (
 	RecordingMediaSDRAM = 1
 )
 
+type LiveViewMode int8
+
+const (
+	LiveViewModeHandheld LiveViewMode = 0
+	LiveViewModeTripod LiveViewMode = 1
+)
+
 type Model struct {
 	Name string
 	HeaderSize int
+	LVModeQuirk bool
 }
 
 type ModelMap map[string]Model
@@ -74,6 +82,7 @@ var models = ModelMap{
 	"D300": {
 		Name: "D300",
 		HeaderSize: 64,
+		LVModeQuirk: true,
 	},
 	"D3200": {
 		Name: "D3200",
@@ -106,6 +115,7 @@ var models = ModelMap{
 	"D700": {
 		Name: "D700",
 		HeaderSize: 64,
+		LVModeQuirk: true,
 	},
 	"D7000": {
 		Name: "D7000",

@@ -270,6 +270,11 @@ func (s *LVServer) Run() error {
 	}
 	s.info.FNs = fns
 
+	err = s.startLiveView()
+	if err != nil {
+		log.LV.Warningf("workerLV: %s", err)
+	}
+
 	s.eg.Go(s.workerLV)
 	s.eg.Go(s.workerAF)
 	time.Sleep(500 * time.Millisecond)
