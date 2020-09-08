@@ -473,20 +473,8 @@ func (s *LVServer) startLiveView() error {
 	s.mtpLock.Lock()
 	defer s.mtpLock.Unlock()
 
-	err := tryWithTimeout(500, 10, func(i int) (err error) {
-		err = s.dev.RunTransactionWithNoParams(OC_NIKON_DeviceReady)
-		if err != nil {
-			if i == 0 {
-				log.LV.Infof("waiting the camera to be ready... (timeout=5s)")
-			}
-			log.LV.Errorf("failed to start live view: the camera didn't become ready within 5s")
-			//return fmt.Errorf("failed to start live view: the camera didn't become ready within 5s")
-		}
-		return
-	})
-
 	desc := DevicePropDesc{}
-	err = s.dev.GetDevicePropDesc(DPC_NIKON_RecordingMedia, &desc)
+	err := s.dev.GetDevicePropDesc(DPC_NIKON_RecordingMedia, &desc)
 	if err != nil {
 		return fmt.Errorf("failed to get recording media: %s", err)
 	}
@@ -510,6 +498,35 @@ func (s *LVServer) startLiveView() error {
 	} else {
 		log.LV.Warning("unexpected format of the RecordingMedia property")
 	}
+
+	if s.model.LVModeQuirk {
+		log.LV.Debugf("this model needs to set Live View Mode to Tripod Mode")
+		err = s.dev.SetDevicePropValue(
+			DPC_NIKON_LiveViewMode,
+			struct {
+					Mode LiveViewMode
+				}{
+					Mode: LiveViewModeTripod,
+			},
+		)
+		if err != nil {
+			log.LV.Debugf("failed to set Live View Mode: %s", err)
+		} else {
+			log.LV.Debugf("successfully switched to Tripod Mode")
+		}
+	}
+
+	err = tryWithTimeout(500, 10, func(i int) (err error) {
+		err = s.dev.RunTransactionWithNoParams(OC_NIKON_DeviceReady)
+		if err != nil {
+			if i == 0 {
+				log.LV.Infof("waiting the camera to be ready... (timeout=5s)")
+			}
+			log.LV.Errorf("failed to start live view: the camera didn't become ready within 5s")
+			//return fmt.Errorf("failed to start live view: the camera didn't become ready within 5s")
+		}
+		return
+	})
 
 	err = s.dev.RunTransactionWithNoParams(OC_NIKON_StartLiveView)
 	if err != nil {
