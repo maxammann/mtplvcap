@@ -501,14 +501,12 @@ func (s *LVServer) startLiveView() error {
 
 	if s.model.LVModeQuirk {
 		log.LV.Debugf("this model needs to set Live View Mode to Tripod Mode")
-		err = s.dev.SetDevicePropValue(
-			DPC_NIKON_LiveViewMode,
-			struct {
-					Mode LiveViewMode
-				}{
-					Mode: LiveViewModeTripod,
-			},
-		)
+		payload := struct {
+			Mode LiveViewMode
+		}{
+			Mode: LiveViewModeTripod,
+		}
+		err = s.dev.SetDevicePropValue(DPC_NIKON_LiveViewMode, &payload)
 		if err != nil {
 			log.LV.Debugf("failed to set Live View Mode: %s", err)
 		} else {
