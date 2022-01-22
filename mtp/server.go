@@ -560,10 +560,11 @@ func (s *LVServer) changeResolution() error {
 	log.LV.Infof("automatically use the largest choice: %d", choices[len(choices)-1])
 
 	payload := struct {
-		Resolution Resolution
+		Resolution uint8
 	}{
-		Resolution: Resolution(choices[len(choices)-1]),
+		Resolution: uint8(3),
 	}
+
 	err = s.dev.SetDevicePropValue(DPC_NIKON_Resolution, &payload)
 	if err != nil {
 		return fmt.Errorf("failed to SetDevicePropValue: %s", err)
