@@ -9,7 +9,7 @@ import (
 )
 
 var root = &logrus.Logger{
-	Out:   os.Stdout,
+	Out:   os.Stderr,
 	Level: logrus.TraceLevel,
 	Formatter: &prefixed.TextFormatter{
 		DisableColors: func() bool {

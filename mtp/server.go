@@ -12,6 +12,7 @@ import (
 	"strconv"
 	"sync"
 	"time"
+	"os"
 
 	"go.uber.org/atomic"
 
@@ -404,6 +405,8 @@ func (s *LVServer) workerBroadcastFrame() error {
 
 		b64 := base64.StdEncoding.EncodeToString(jpeg)
 
+		binary.Write(os.Stdout, binary.LittleEndian, jpeg)
+
 		for c := range s.streamClients {
 			err := c.WriteMessage(websocket.TextMessage, []byte(b64))
 			if err != nil {
@@ -485,6 +488,7 @@ func (s *LVServer) startLiveView() error {
 
 	if s.maxResolution {
 		err = s.changeResolution()
+		log.LV.Warningf("%s", err)
 		if err != nil {
 			log.LV.Warningf("failed to change the image resolution (%s); if it affects capturing frames, consider disabling `-max-resolution`")
 		}
